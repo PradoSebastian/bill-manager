@@ -32,6 +32,22 @@ python -m venv .venv
 pip install -e .
 ```
 
+## iOS Shortcut (optional)
+
+If you also use the iPhone/iPad Shortcut named "Identificar gasto", you can use it to quickly capture a new expense and save it in the format expected by this app.
+
+To use it correctly:
+
+- import the Shortcut into the Apple Shortcuts app,
+- run it whenever you want to register a new expense,
+- make sure the generated JSON file is saved under the folder configured by `JSON_FILES_PATH` for the current month, for example:
+
+```text
+<JSON_FILES_PATH>/<current month>/
+```
+
+The shortcut should produce records with the fields expected by the importer: `tipo`, `cuenta_destino`, `valor`, `fecha`, `razon`, and `mes`. If you change the output location, update the shortcut destination or the `JSON_FILES_PATH` setting accordingly.
+
 ## Environment variables
 
 The application reads its values from a `.env` file in the project root. The project already includes a working example, but you should adjust it if you change paths or table names.
