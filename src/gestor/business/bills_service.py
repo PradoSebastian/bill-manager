@@ -13,6 +13,13 @@ from src.gestor.util.words import WordsUtil
 logger = logging.getLogger(__name__)
 
 class BillsService:
+    
+    def __init__(self, month: str):
+        self.current_month = (
+            month 
+            if month 
+            else AppConstants.MONTHS_EQUIVALENCE.get(str(datetime.now().month), None)
+        )
         
     def _classify_bills(self, bills: list[dict[str, Any]]) -> dict[str, list[Bill]]:
         classified_bills = {
@@ -33,6 +40,8 @@ class BillsService:
         range = ""
         if bill_destiny == AppConstants.INCOMES_REF and settings.incomes_table_range:
             range = settings.incomes_table_range
+        elif bill_destiny == AppConstants.DEBIT_REF and settings.debit_table_range:
+            range = settings.debit_table_range
         current_bills = ExcelUtil.read_elements_from_table(
             excel_path=settings.excel_path,
             sheet_name=current_month,
@@ -79,6 +88,7 @@ class BillsService:
         
         if new_bills:
             self._write_bills_to_excel(bill_destiny, new_bills, current_month, init_row, range, headers)
+            logger.info(f"Identified Bills for {bill_destiny}: {new_bills}, init row: {init_row}")
         
     def _write_bills_to_excel(
         self,
@@ -106,12 +116,16 @@ class BillsService:
     def _filter_new_bills(self, new_bills: list[Bill], current_bills: list[Bill]) -> list[Bill]:
         filtered_bills = []
         for new_bill in new_bills:
-            if not any(new_bill.equals_by_amount_and_date(current_bill) for current_bill in current_bills):
+            if (
+                AppConstants.MENSUAL_INCOME_KEY_WORD in WordsUtil.remove_accents(new_bill.description) 
+                or 
+                not any(new_bill.equals_by_amount_and_date(current_bill) for current_bill in current_bills)
+            ):
                 filtered_bills.append(new_bill)
-        return filtered_bills        
+        return filtered_bills
     
     def process_bills(self):
-        current_month = AppConstants.MONTHS_EQUIVALENCE.get(str(datetime.now().month), None)
+        current_month = self.current_month
         if not current_month:
             logger.error("Current month not found in MONTHS_EQUIVALENCE.")
             return
