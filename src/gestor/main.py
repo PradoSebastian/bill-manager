@@ -1,4 +1,5 @@
 import logging
+import argparse
 
 from src.gestor.business.bills_service import BillsService
 
@@ -9,7 +10,10 @@ logging.basicConfig(
 )
 
 def main():
-    bills_service = BillsService()
+    parser = argparse.ArgumentParser(description="Bills Manager")
+    parser.add_argument("--month", type=str, default="", help="The month for which to process bills as String, e.g. 'Julio'.")
+    args = parser.parse_args()
+    bills_service = BillsService(args.month)
     bills_service.process_bills()
 
 
